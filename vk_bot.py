@@ -15,6 +15,6 @@ while True:
         while True:
             if parser.comparison() == 1:
                 vk.messages.send(user_id=event.user_id, message='У вас новый предмет в инвентаре: ' + 'https://steamcommunity.com/profiles/76561198373547526/inventory/#440', random_id='0')
-                time.sleep(1800)
+                time.sleep(360)
             else:
-                time.sleep(1800)
+                time.sleep(360)
