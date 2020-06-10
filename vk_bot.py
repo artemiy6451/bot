@@ -17,10 +17,10 @@ while True:
                 vk.messages.send(user_id=event.user_id, message='™', random_id='0')
                 vk.messages.send(user_id=event.user_id, message='У вас новый предмет в инвентаре. ', random_id='0')
                 if int(parser.count_items) <= 4:
-                    vk.messages.send(user_id=event.user_id, message=f'Сейчас в инвенторе {parser.count_items} предмета.', random_id='0')
+                    vk.messages.send(user_id=event.user_id, message=f'Сейчас в инвентаре {parser.count_items} предмета.', random_id='0')
                     time.sleep(360)
                 else:
-                    vk.messages.send(user_id=event.user_id, message=f'Сейчас в инвенторе {parser.count_items} предметов.',random_id='0')
+                    vk.messages.send(user_id=event.user_id, message=f'Сейчас в инвентаре {parser.count_items} предметов.',random_id='0')
                     time.sleep(360)
             else:
                 time.sleep(360)
