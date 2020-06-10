@@ -35,16 +35,34 @@ def parse():
     if html.status_code == 200:
         get_content(html.text)
     else: print('Error')
+
 count_items = 1
 def comparison():
     parse()
     global count_items
-    if listings[-1].get('count') == str(count_items):
-        print(count_items)
-        print("0")
-        return 0
+
+    if listings[-1].get('count') == '8':
+        print(listings[-2])
+        if listings[-2].get('count') == str(count_items):
+            print(count_items)
+            print("0")
+            return 0
+
+        else:
+            count_items = int(listings[-2].get('count'))
+            print(count_items)
+            print('1')
+            return 1
+
     else:
-        count_items = int(listings[-1].get('count'))
-        print(count_items)
-        print('1')
-        return 1
+        print(listings[-1])
+        if listings[-1].get('count') == str(count_items):
+            print(count_items)
+            print("0")
+            return 0
+
+        else:
+            count_items = int(listings[-1].get('count'))
+            print(count_items)
+            print('1')
+            return 1
