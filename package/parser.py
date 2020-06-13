@@ -17,7 +17,7 @@ def get_html(url,params=None):
     return r
 
 def get_content(html):
-    soup = BeautifulSoup(html, 'lxml')
+    soup = BeautifulSoup(html, 'html')
     items = soup.find_all('span', class_="games_list_tab_number")
 
     print(items)
