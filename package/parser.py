@@ -26,6 +26,7 @@ def get_content(html):
 
             'count' : i.get_text(strip=True).replace('(','').replace(')','')
         })
+    del listings[0:-2]
     print(listings)
     return listings
 
