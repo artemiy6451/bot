@@ -17,9 +17,9 @@ balance = []
 itemPrice = []
 
 def outh():
-    user = wa.WebAuth('emmett66666')
+    user = wa.WebAuth('login')
     twofactor = input('Введите 2FA код: ')
-    session = user.login(password='223123ar', twofactor_code=twofactor)
+    session = user.login(password='password', twofactor_code=twofactor)
     return session
 
 session = outh()
