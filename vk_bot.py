@@ -10,17 +10,21 @@ vk_session = vk_api.VkApi(token='6f88ad51080d9915b1b744718780f612b2b3f5e4d9cc72c
 
 longpoll = VkLongPoll(vk_session)
 vk = vk_session.get_api()
+parser.get_price(parser.URL_2)
+
 while True:
     for event in longpoll.listen():
         while True:
             if parser.comparison() == 1:
                 vk.messages.send(user_id=event.user_id, message='™', random_id='0')
-                vk.messages.send(user_id=event.user_id, message='У вас новый предмет в инвентаре. ', random_id='0')
+                vk.messages.send(user_id=event.user_id, message='У вас новый предмет в инвентаре', random_id='0')
                 if int(parser.count_items) <= 4:
-                    vk.messages.send(user_id=event.user_id, message=f'Сейчас в инвентаре {parser.count_items} предмета.', random_id='0')
-                    time.sleep(360)
+                    vk.messages.send(user_id=event.user_id, message=f'Сейчас в инвентаре {parser.count_items} предмета', random_id='0')
+                    vk.messages.send(user_id=event.user_id,message=f'Ваш баланс составляет {parser.balance[-1].get("balance")}', random_id='0')
+                    time.sleep(10)
                 else:
-                    vk.messages.send(user_id=event.user_id, message=f'Сейчас в инвентаре {parser.count_items} предметов.',random_id='0')
-                    time.sleep(360)
+                    vk.messages.send(user_id=event.user_id, message=f'Сейчас в инвентаре {parser.count_items} предметов',random_id='0')
+                    vk.messages.send(user_id=event.user_id,message=f'Ваш баланс составляет {parser.balance[-1].get("balance")}', random_id='0')
+                    time.sleep(10)
             else:
-                time.sleep(360)
+                time.sleep(10)
