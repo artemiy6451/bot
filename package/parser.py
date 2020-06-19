@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import steam.webauth as wa
-import steam.client.user
+
 
 
 
