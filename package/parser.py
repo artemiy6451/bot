@@ -2,11 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import steam.webauth as wa
 
-
-
-
 URL = 'https://steamcommunity.com/profiles/76561198373547526/inventory/#440'
-URL_2 = 'https://steamcommunity.com/profiles/76561198373547526/inventory/#440'
+URL_2 = 'https://steamcommunity.com/market/history#'
 Headers = {
     'Accept': '*/*',
     'Accept-Language': 'ru,en;q=0.9',
@@ -15,16 +12,22 @@ Headers = {
 listings = []
 balance = []
 itemPrice = []
-
-def outh():
-    user = wa.WebAuth('login')
-    twofactor = input('Введите 2FA код: ')
-    session = user.login(password='password', twofactor_code=twofactor)
+login = None
+password = None
+twofactor= None
+session = None
+first = True
+def outh(login=None, password=None,twofactor=None):
+    user = wa.WebAuth(login)
+    session = user.login(password=password, twofactor_code=twofactor)
     return session
 
-session = outh()
-
 def get_html(url,params=None):
+    global session
+    global first
+    if first:
+        session = outh(login,password,twofactor)
+        first = False
     r = session.get(url, params=params, headers=Headers)
     print(r)
     return r
@@ -52,11 +55,9 @@ def get_content(html):
     print(listings)
     return balance, listings
 
-def get_price(url):
-    r = session.get(url, headers=Headers)
-    html = r
-    soup = BeautifulSoup(html.text, 'lxml')
-    print(soup)
+def get_bal(url):
+    parse()
+    return balance
 
 
 def parse():
