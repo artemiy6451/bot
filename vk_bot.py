@@ -2,7 +2,7 @@ import vk_api
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.longpoll import VkLongPoll,VkEventType
 import requests
-from package import parser
+from package import parser, login
 from pyowm.owm import OWM
 import time
 
@@ -61,21 +61,21 @@ while True:
                         if event_2.message == 'Количество предметов':
                             keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
                             keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
-                            if parser.comparison() == 1:
-                                if int(parser.count_items) <= 4:
+                            main = login.main()
+                            print(main)
+                            if int(parser.count_items) <= 4:
                                     vk.messages.send(user_id=event_2.user_id, random_id='0',
                                                      keyboard=keyboard.get_keyboard(),
                                                      message=f'Сейчас в инвентаре {parser.count_items} предмета.')
-                                else:
+                            else:
                                     vk.messages.send(user_id=event_2.user_id, random_id='0',
                                                      keyboard=keyboard.get_keyboard(),
                                                      message=f'Сейчас в инвентаре {parser.count_items} предметов.')
-                            else:
-                                if int(parser.count_items) <= 4:
+                            if int(parser.count_items) <= 4:
                                     vk.messages.send(user_id=event_2.user_id, random_id='0',
                                                      keyboard=keyboard.get_keyboard(),
                                                      message=f'Сейчас в инвентаре {parser.count_items} предмета.')
-                                else:
+                            else:
                                     vk.messages.send(user_id=event_2.user_id, random_id='0',
                                                      keyboard=keyboard.get_keyboard(),
                                                      message=f'Сейчас в инвентаре {parser.count_items} предметов.')

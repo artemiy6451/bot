@@ -12,28 +12,68 @@ Headers = {
 listings = []
 balance = []
 itemPrice = []
-login = None
-password = None
 twofactor= None
 session = None
 first = True
-def outh(login=None, password=None,twofactor=None):
-    user = wa.WebAuth(login)
-    session = user.login(password=password, twofactor_code=twofactor)
+FILENAME = 'cookies.txt'
+username = 'he2hh'
+password = 'gfhnbz11'
+cookies = {}
+
+def login():
+    global session
+    twofactor_code = input('-')
+    user = wa.WebAuth(username=username)
+    session = user.login(password=password,twofactor_code=twofactor_code)
     return session
 
-def get_html(url,params=None):
+first_login = True
+def on_login():
     global session
-    global first
-    if first:
-        session = outh(login,password,twofactor)
-        first = False
-    r = session.get(url, params=params, headers=Headers)
-    print(r)
-    return r
+    global first_login
+    global cookies
+    if first_login:
+        session = login()
+        first_login = False
+    for domain in ['store.steampowered.com', 'help.steampowered.com', 'steamcommunity.com']:
+        if domain == 'store.steampowered.com':
+            cookies.update({'sessionid': session.cookies.get(name='sessionid', domain=domain)})
+            cookies.update({'steamLoginSecure': session.cookies.get(name='steamLoginSecure', domain=domain)})
+            cookies.update({'birthtime': session.cookies.get(name='birthtime', domain=domain)})
+        elif domain == 'help.steampowered.com':
+            cookies.update({'sessionid': session.cookies.get(name='sessionid', domain=domain)})
+            cookies.update({'steamLoginSecure': session.cookies.get(name='steamLoginSecure', domain=domain)})
+            cookies.update({'birthtime': session.cookies.get(name='birthtime', domain=domain)})
+        elif domain == 'steamcommunity.com':
+            cookies.update({'sessionid': session.cookies.get(name='sessionid', domain=domain)})
+            cookies.update({'steamLoginSecure': session.cookies.get(name='steamLoginSecure', domain=domain)})
+            cookies.update({'birthtime': session.cookies.get(name='birthtime', domain=domain)})
+        else:
+            print('Unknown domain')
 
+def send_cookies(cookies=None,new_session=None):
+    if new_session:
+        on_login()
+        f = open('cookies.txt', 'w')
+        f.writelines('sessionid ' + cookies.get('sessionid') + '\n')
+        f.writelines(' steamLoginSecure ' + cookies.get('steamLoginSecure') + '\n')
+        f.writelines(' birthtime ' + cookies.get('birthtime') + '\n')
+        f.close()
+        new_session = False
+    else:
+        cookies.clear()
+        on_login()
+        try:
+            with open("cookies.txt") as file:
+                for line in file:
+                    key, value = line.split()
+                    cookies[key] = value
+        except TypeError:
+            print('Type Error')
+    r = requests.get(url=URL,cookies=cookies)
+    return r
 def get_content(html):
-    soup = BeautifulSoup(html, 'lxml')
+    soup = BeautifulSoup(html, 'html.parser')
     items = soup.find_all('span', class_="games_list_tab_number")
     bal = soup.find_all('a', class_='global_action_link', id='header_wallet_balance')
     for b in bal:
@@ -61,7 +101,7 @@ def get_bal(url):
 
 
 def parse():
-    html = get_html(URL)
+    html = send_cookies(cookies=cookies, new_session=True)
     print(html.status_code)
     if html.status_code == 200:
         get_content(html.text)
@@ -98,3 +138,5 @@ def comparison():
             print(count_items)
             print('1')
             return 1
+
+parse()
