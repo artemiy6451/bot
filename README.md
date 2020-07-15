@@ -1,2 +1,2 @@
 # bot
-pip install vk_api steam requests pyowm sqlite3 bs4
+pip install vk_api steam requests pyowm pysqlite bs4
