@@ -3,21 +3,23 @@ import requests
 from bs4 import BeautifulSoup
 
 url = 'https://steamcommunity.com/profiles/76561198206968703/inventory/'
-username = ''
-password = ''
-twofactor_code = ''
+username = 'eeonegay112'
+password = '223123ar'
 session = None
 cookies = {}
 game = []
 item = []
 info = []
-balance = []
+bal = []
+balance_new = 0
+balance_last = 0
 
 
 def login():
     global session
+    two_factor_code = input('=')
     user = wa.WebAuth(username=username)
-    session = user.login(password=password, twofactor_code=twofactor_code)
+    session = user.login(password=password, twofactor_code=two_factor_code)
     return session
 
 
@@ -81,10 +83,6 @@ def get_content(html):
     soup = BeautifulSoup(html, 'html.parser')
     games = soup.find_all('span', class_="games_list_tab_name")
     items = soup.find_all('span', class_="games_list_tab_number")
-    if len(info)>0:
-        game.clear()
-        item.clear()
-        info.clear()
     for el in games:
         game.append(el.get_text(strip=True))
     for it in items:
@@ -92,25 +90,52 @@ def get_content(html):
         item.append(it.get_text(strip=True).replace('(','').replace(')',''))
         i += 1
     n = 0
-    x = 0
     for all in game:
         info.append({
             all : item[n]
         })
-        n += 1
-        x += 1
+        n +=1
+    del info[0:-12]
+    del game[0:-12]
+    del item[0:-12]
     print(info)
     return info
 def get_bal(html):
+    global balance_last, balance_new
     soup = BeautifulSoup(html, 'html.parser')
-    bal = soup.find_all('a', class_="global_action_link", id='header_wallet_balance')
-    for b in bal:
-        balance.append(b.get_text(strip=True).replace(' pуб.', ''))
-    del balance[0:-2]
-    print(balance)
+    bal_1 = soup.find_all('a', class_="global_action_link", id='header_wallet_balance')
+    for b in bal_1:
+        bal.append(b.get_text(strip=True).replace(' pуб.', ''))
+    del bal[0:-2]
+    balance_last = bal[0][:-3]
+    try:
+        balance_new = bal[1][:-3]
+    except:
+        pass
+    print(balance_last, balance_new)
 
+def comparation(step=0, n=0):
+    if step == 0:
+        pass
+    else:
+        for i in item:
+            try:
+                if i == item[n + 6]:
+                    n += 1
+                    return '+'
+                else:
+                    n += 1
+                    return '-'
+            except IndexError:
+                pass
+
+
+step = 0
 def main(new = False):
+    global step
     html = send_cookies(cookies=cookies, new_session=new)
     if html.ok:
         get_content(html.text)
         get_bal(html.text)
+        comparation(step=step)
+    step +=1

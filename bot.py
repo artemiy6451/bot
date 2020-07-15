@@ -5,6 +5,7 @@ import requests
 from package import login
 from pyowm.owm import OWM
 import time
+import sqlite3
 
 session = requests.Session()
 
@@ -12,380 +13,538 @@ vk_session = vk_api.VkApi(token='6f88ad51080d9915b1b744718780f612b2b3f5e4d9cc72c
 token = 'e0e9c0ccd1fa05300b95620e16ea503f'
 new = 1
 flag = False
+new_1 = 1
+is_on = True
+
 
 longpoll = VkLongPoll(vk_session)
 vk = vk_session.get_api()
+
+db = sqlite3.connect('server.db')
+sql = db.cursor()
+
+sql.execute("""CREATE TABLE IF NOT EXISTS users(
+user INTEGER
+)""")
+db.commit()
 
 keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
 keyboard.add_button('Старт', color=VkKeyboardColor.DEFAULT)
 vk.messages.send(user_id="254928937", random_id='0', message='Нажми старт', keyboard=keyboard.get_keyboard())
 
+
+def comparation():
+    n = 0
+    for i in login.item:
+        try:
+            if i == login.item[n + 6]:
+                print('+')
+                n += 1
+            else:
+                vk.messages.send(user_id=event.user_id, random_id='0', message=f'В игре {login.game[n+6]} новый пердмет, теперь их {login.item[n+6]}')
+                n += 1
+        except IndexError:
+            pass
+
 while True:
-    for event in longpoll.listen():
-        if event.type == VkEventType.MESSAGE_NEW:
-            if event.message == 'Старт':
-                keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                keyboard.add_button('Стим', color=VkKeyboardColor.DEFAULT)
-                keyboard.add_button('Погода', color=VkKeyboardColor.PRIMARY)
-                vk.messages.send(user_id=event.user_id, keyboard=keyboard.get_keyboard(), random_id='0',
-                                 message='Главное меню')
-            if event.message == 'Стим':
-                keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                keyboard.add_button('Баланс', color=VkKeyboardColor.DEFAULT)
-                keyboard.add_button('Инвентарь', color=VkKeyboardColor.PRIMARY)
-                keyboard.add_button('Вход', color=VkKeyboardColor.POSITIVE)
-                keyboard.add_button('Назад', color=VkKeyboardColor.NEGATIVE)
-                vk.messages.send(user_id=event.user_id,
-                                 keyboard=keyboard.get_keyboard(),
-                                 random_id='0',
-                                 message='''Стим меню''')
-                for event_2 in longpoll.listen():
-                    if event_2.type == VkEventType.MESSAGE_NEW:
-                        if event_2.message == 'Баланс':
-                            keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                            login.main()
-                            print(login.balance[-1])
-                            if int(login.balance[0]) > int(login.balance[-1]):
-                                _balance = str(int(login.balance[0]) - int(login.balance[-1]))
-                            elif int(login.balance[0]) < int(login.balance[-1]):
-                                _balance = str(int(login.balance[0]) + int(login.balance[-1]))
-                            elif int(login.balance[0]) == int(login.balance[-1]):
-                                _balance = str(int(login.balance[0]) - int(login.balance[-1]))
-                            keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
-                            vk.messages.send(user_id=event.user_id, random_id='0',
-                                             message=f'Баланс сейчас {login.balance[-1]} руб, прошлый баланс {login.balance[0]} руб, разница {_balance} руб.',
-                                             keyboard=keyboard.get_keyboard())
-                            for event_3 in longpoll.listen():
-                                if event_3.type == VkEventType.MESSAGE_NEW:
-                                    if event_3.message == 'Назад':
-                                        flag = True
-                                        break
-                                    if flag:
-                                        break
-                                if flag:
-                                    break
-                            if flag:
+    try:
+        for event in longpoll.listen():
+            if event.type == VkEventType.MESSAGE_NEW:
+                if event.message == 'Старт':
+                    keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                    keyboard.add_button('Стим', color=VkKeyboardColor.DEFAULT)
+                    keyboard.add_button('Погода', color=VkKeyboardColor.PRIMARY)
+                    keyboard.add_button('Подписка', color=VkKeyboardColor.POSITIVE)
+                    keyboard.add_button('Оповещения', color=VkKeyboardColor.POSITIVE)
+                    vk.messages.send(user_id=event.user_id, keyboard=keyboard.get_keyboard(), random_id='0',
+                                     message='Главное меню')
+                if event.message == 'Стим':
+                    keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                    keyboard.add_button('Баланс', color=VkKeyboardColor.DEFAULT)
+                    keyboard.add_button('Инвентарь', color=VkKeyboardColor.PRIMARY)
+                    keyboard.add_button('Вход', color=VkKeyboardColor.POSITIVE)
+                    keyboard.add_button('Назад', color=VkKeyboardColor.NEGATIVE)
+                    vk.messages.send(user_id=event.user_id,
+                                     keyboard=keyboard.get_keyboard(),
+                                     random_id='0',
+                                     message='''Стим меню''')
+                    for event_2 in longpoll.listen():
+                        if event_2.type == VkEventType.MESSAGE_NEW:
+                            if event_2.message == 'Баланс':
                                 keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                                keyboard.add_button('Баланс', color=VkKeyboardColor.DEFAULT)
-                                keyboard.add_button('Инвентарь', color=VkKeyboardColor.PRIMARY)
-                                keyboard.add_button('Вход', color=VkKeyboardColor.POSITIVE)
-                                keyboard.add_button('Назад', color=VkKeyboardColor.NEGATIVE)
-                                vk.messages.send(user_id=event.user_id,
-                                                 keyboard=keyboard.get_keyboard(),
-                                                 random_id='0',
-                                                 message='''Стим меню''')
-                                flag = False
-                        if event_2.message == 'Инвентарь':
-                            keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                            login.main()
-                            n = 0
-                            for game in login.game:
-                                if n == 4 or n == 8 or n == 12 or n == 16 or n == 20:
-                                    keyboard.add_line()
-                                    keyboard.add_button(login.game[n], color=VkKeyboardColor.DEFAULT)
-                                    n += 1
-                                else:
-                                    keyboard.add_button(login.game[n], color=VkKeyboardColor.DEFAULT)
-                                    n += 1
-                            keyboard.add_line()
-                            keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
-                            vk.messages.send(user_id=event.user_id,
-                                             keyboard=keyboard.get_keyboard(),
-                                             random_id='0',
-                                             message='Выберите игру')
-                            for event_4 in longpoll.listen():
-                                if event_4.type == VkEventType.MESSAGE_NEW:
-                                    if event_4.message == login.game[0]:
-                                        if int(login.item[0]) <= 4:
-                                            vk.messages.send(user_id=event_2.user_id, random_id='0',
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             message=f'Сейчас в инвентаре {login.item[0]} предмета.')
-                                        else:
-                                            vk.messages.send(user_id=event_2.user_id, random_id='0',
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             message=f'Сейчас в инвентаре {login.item[0]} предметов.')
-
-                                    if event_4.message == login.game[1]:
-                                        if int(login.item[1]) <= 4:
-                                            vk.messages.send(user_id=event_2.user_id, random_id='0',
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             message=f'Сейчас в инвентаре {login.item[1]} предмета.')
-                                        else:
-                                            vk.messages.send(user_id=event_2.user_id, random_id='0',
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             message=f'Сейчас в инвентаре {login.item[1]} предметов.')
-
-                                    if event_4.message == login.game[2]:
-                                        if int(login.item[2]) <= 4:
-                                            vk.messages.send(user_id=event_2.user_id, random_id='0',
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             message=f'Сейчас в инвентаре {login.item[2]} предмета.')
-                                        else:
-                                            vk.messages.send(user_id=event_2.user_id, random_id='0',
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             message=f'Сейчас в инвентаре {login.item[2]} предметов.')
-
-                                    if event_4.message == login.game[3]:
-                                        if int(login.item[3]) <= 4:
-                                            vk.messages.send(user_id=event_2.user_id, random_id='0',
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             message=f'Сейчас в инвентаре {login.item[3]} предмета.')
-                                        else:
-                                            vk.messages.send(user_id=event_2.user_id, random_id='0',
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             message=f'Сейчас в инвентаре {login.item[3]} предметов.')
-
-                                    if event_4.message == login.game[4]:
-                                        if int(login.item[4]) <= 4:
-                                            vk.messages.send(user_id=event_2.user_id, random_id='0',
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             message=f'Сейчас в инвентаре {login.item[4]} предмета.')
-                                        else:
-                                            vk.messages.send(user_id=event_2.user_id, random_id='0',
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             message=f'Сейчас в инвентаре {login.item[4]} предметов.')
-
-                                    if event_4.message == login.game[5]:
-                                        if int(login.item[5]) <= 4:
-                                            vk.messages.send(user_id=event_2.user_id, random_id='0',
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             message=f'Сейчас в инвентаре {login.item[5]} предмета.')
-                                        else:
-                                            vk.messages.send(user_id=event_2.user_id, random_id='0',
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             message=f'Сейчас в инвентаре {login.item[5]} предметов.')
-
-                                    if event_4.message == 'Назад':
-                                        flag = True
-                                        break
-                                    if flag:
-                                        break
-                                if flag:
-                                    break
-                            if flag:
-                                keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                                keyboard.add_button('Баланс', color=VkKeyboardColor.DEFAULT)
-                                keyboard.add_button('Инвентарь', color=VkKeyboardColor.PRIMARY)
-                                keyboard.add_button('Вход', color=VkKeyboardColor.POSITIVE)
-                                keyboard.add_button('Назад', color=VkKeyboardColor.NEGATIVE)
-                                vk.messages.send(user_id=event.user_id,
-                                                 keyboard=keyboard.get_keyboard(),
-                                                 random_id='0',
-                                                 message='''Стим меню''')
-                                flag = False
-                        if event_2.message == 'Вход':
-                            keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                            keyboard.add_button('Логин', color=VkKeyboardColor.DEFAULT)
-                            keyboard.add_button('Пароль', color=VkKeyboardColor.PRIMARY)
-                            keyboard.add_button('2FA код', color=VkKeyboardColor.POSITIVE)
-                            keyboard.add_button('Куки', color=VkKeyboardColor.POSITIVE)
-                            keyboard.add_line()
-                            keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
-                            vk.messages.send(user_id=event.user_id,
-                                             keyboard=keyboard.get_keyboard(),
-                                             random_id='0',
-                                             message='Сначала логин, затем пароль, и потом 2FA код')
-                            for event_5 in longpoll.listen():
-                                if event_5.type == VkEventType.MESSAGE_NEW:
-                                    if event_5.message == 'Логин':
-                                        vk.messages.send(user_id=event.user_id,
-                                                         random_id='0',
-                                                         message='Введите свой логин')
-                                        time.sleep(1)
-                                        for event_6 in longpoll.listen():
-                                            if event_6.type == VkEventType.MESSAGE_NEW:
-                                                if event_6.message == 'Введите свой логин':
-                                                    print('1')
-                                                else:
-                                                    login.username = event_6.message
-                                                    flag = True
-                                                    if flag:
-                                                        break
-                                                if flag:
-                                                    break
-                                            if flag:
-                                                break
-                                        if flag:
-                                            keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                                            keyboard.add_button('Логин', color=VkKeyboardColor.DEFAULT)
-                                            keyboard.add_button('Пароль', color=VkKeyboardColor.PRIMARY)
-                                            keyboard.add_button('2FA код', color=VkKeyboardColor.POSITIVE)
-                                            keyboard.add_button('Куки', color=VkKeyboardColor.POSITIVE)
-                                            keyboard.add_line()
-                                            keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
-                                            vk.messages.send(user_id=event.user_id,
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             random_id='0',
-                                                             message='Теперь пароль')
-                                            flag = False
-                                    if event_5.message == 'Пароль':
-                                        vk.messages.send(user_id=event.user_id,
-                                                         random_id='0',
-                                                         message='Введите свой пароль')
-                                        time.sleep(1)
-                                        for event_7 in longpoll.listen():
-                                            if event_7.type == VkEventType.MESSAGE_NEW:
-                                                if event_7.message == 'Введите свой пароль':
-                                                    print('1')
-                                                else:
-                                                    login.password = event_7.message
-                                                    flag = True
-                                                    if flag:
-                                                        break
-                                                if flag:
-                                                    break
-                                            if flag:
-                                                break
-                                        if flag:
-                                            keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                                            keyboard.add_button('Логин', color=VkKeyboardColor.DEFAULT)
-                                            keyboard.add_button('Пароль', color=VkKeyboardColor.PRIMARY)
-                                            keyboard.add_button('2FA код', color=VkKeyboardColor.POSITIVE)
-                                            keyboard.add_button('Куки', color=VkKeyboardColor.POSITIVE)
-                                            keyboard.add_line()
-                                            keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
-                                            vk.messages.send(user_id=event.user_id,
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             random_id='0',
-                                                             message='Ну и напоследок 2FA')
-                                            flag = False
-                                    if event_5.message == '2FA код':
-                                        vk.messages.send(user_id=event.user_id,
-                                                         random_id='0',
-                                                         message='Жду твой 2FA код')
-                                        time.sleep(1)
-                                        for event_8 in longpoll.listen():
-                                            if event_8.type == VkEventType.MESSAGE_NEW:
-                                                if event_8.message == 'Жду твой 2FA код':
-                                                    print('1')
-                                                else:
-                                                    login.twofactor_code = event_8.message
-                                                    flag = True
-                                                    if flag:
-                                                        break
-                                                if flag:
-                                                    break
-                                            if flag:
-                                                break
-                                        if flag:
-                                            keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                                            keyboard.add_button('Логин', color=VkKeyboardColor.DEFAULT)
-                                            keyboard.add_button('Пароль', color=VkKeyboardColor.PRIMARY)
-                                            keyboard.add_button('2FA код', color=VkKeyboardColor.POSITIVE)
-                                            keyboard.add_button('Куки', color=VkKeyboardColor.POSITIVE)
-                                            keyboard.add_line()
-                                            keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
-                                            vk.messages.send(user_id=event.user_id,
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             random_id='0',
-                                                             message='Вхожу')
-                                            if new == 1:
-                                                login.main(new=True)
-                                                new += 1
-                                            else:
-                                                vk.messages.send(user_id=event.user_id,
-                                                                 keyboard=keyboard.get_keyboard(),
-                                                                 random_id='0',
-                                                                 message='Вы уже вошли в свой аккаунт')
-                                            flag = False
-                                    if event_5.message ==  'Куки':
-                                        login.main()
-                                        print(len(login.balance))
-                                        if len(login.balance) == 0:
+                                login.main()
+                                if int(login.balance_last) < int(login.balance_new):
+                                    _balance = '+' + str(int(login.balance_new) - int(login.balance_last))
+                                elif int(login.balance_last) > int(login.balance_new):
+                                    _balance = '-' + str(int(login.balance_last) - int(login.balance_new))
+                                elif int(login.balance_last) == int(login.balance_new):
+                                    _balance = str(int(login.balance_new) - int(login.balance_last))
+                                keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
+                                vk.messages.send(user_id=event.user_id, random_id='0',
+                                                 message=f'Баланс сейчас {login.balance_new} руб, прошлый баланс {login.balance_last} руб, разница {_balance} руб.',
+                                                 keyboard=keyboard.get_keyboard())
+                                for event_3 in longpoll.listen():
+                                    if event_3.type == VkEventType.MESSAGE_NEW:
+                                        if event_3.message == 'Назад':
                                             flag = True
-                                        if flag:
-                                            keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                                            keyboard.add_button('Логин', color=VkKeyboardColor.DEFAULT)
-                                            keyboard.add_button('Пароль', color=VkKeyboardColor.PRIMARY)
-                                            keyboard.add_button('2FA код', color=VkKeyboardColor.POSITIVE)
-                                            keyboard.add_button('Куки', color=VkKeyboardColor.POSITIVE)
-                                            keyboard.add_line()
-                                            keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
-                                            vk.messages.send(user_id=event.user_id,
-                                                             keyboard=keyboard.get_keyboard(),
-                                                             random_id='0',
-                                                             message='Кукки не действительны\nПожалуйста войдите в аккаунт')
-                                            flag = False
-                                        elif len(login.balance) > 0:
-                                            flag = True
-                                        if flag:
-                                            keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                                            keyboard.add_button('Логин', color=VkKeyboardColor.DEFAULT)
-                                            keyboard.add_button('Пароль', color=VkKeyboardColor.PRIMARY)
-                                            keyboard.add_button('2FA код', color=VkKeyboardColor.POSITIVE)
-                                            keyboard.add_button('Куки', color=VkKeyboardColor.POSITIVE)
-                                            keyboard.add_line()
-                                            keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
-                                            vk.messages.send(user_id=event.user_id,
-                                                             keyboard=keyboard.get_keyboard(),
-                                                            random_id='0',
-                                                            message='Вы успешно вошли')
-                                            flag = False
-                                    if event_5.message == 'Назад':
-                                        flag = True
+                                            break
                                         if flag:
                                             break
                                     if flag:
                                         break
                                 if flag:
-                                    break
-                            if flag:
+                                    keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                                    keyboard.add_button('Баланс', color=VkKeyboardColor.DEFAULT)
+                                    keyboard.add_button('Инвентарь', color=VkKeyboardColor.PRIMARY)
+                                    keyboard.add_button('Вход', color=VkKeyboardColor.POSITIVE)
+                                    keyboard.add_button('Назад', color=VkKeyboardColor.NEGATIVE)
+                                    vk.messages.send(user_id=event.user_id,
+                                                     keyboard=keyboard.get_keyboard(),
+                                                     random_id='0',
+                                                     message='''Стим меню''')
+                                    flag = False
+                            if event_2.message == 'Инвентарь':
                                 keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                                keyboard.add_button('Баланс', color=VkKeyboardColor.DEFAULT)
-                                keyboard.add_button('Инвентарь', color=VkKeyboardColor.PRIMARY)
-                                keyboard.add_button('Вход', color=VkKeyboardColor.POSITIVE)
-                                keyboard.add_button('Назад', color=VkKeyboardColor.NEGATIVE)
+                                login.main()
+                                del login.game[0:-6]
+                                n = 0
+                                for game in login.game:
+                                    if n == 4 or n == 8 or n == 12 or n == 16 or n == 20:
+                                        keyboard.add_line()
+                                        keyboard.add_button(login.game[n], color=VkKeyboardColor.DEFAULT)
+                                        n += 1
+                                    else:
+                                        keyboard.add_button(login.game[n], color=VkKeyboardColor.DEFAULT)
+                                        n += 1
+                                keyboard.add_line()
+                                keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
                                 vk.messages.send(user_id=event.user_id,
                                                  keyboard=keyboard.get_keyboard(),
                                                  random_id='0',
-                                                 message='''Стим меню''')
-                                flag = False
-                        if event_2.message == 'Назад':
-                            flag = True
-                            if flag:
-                                break
-                        if flag:
-                            break
-                    if flag:
-                        break
-                if flag:
-                    keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                    keyboard.add_button('Стим', color=VkKeyboardColor.DEFAULT)
-                    keyboard.add_button('Погода', color=VkKeyboardColor.PRIMARY)
-                    vk.messages.send(user_id=event.user_id, keyboard=keyboard.get_keyboard(), random_id='0',
-                                     message='Главное меню')
-                    flag = False
-            if event.message == 'Погода':
-                vk.messages.send(user_id=event.user_id, random_id='0', message='В каком городе?')
-                for event_4 in longpoll.listen():
-                    if event_4.type == VkEventType.MESSAGE_NEW:
-                        if event_4.message == 'В каком городе?':
-                            pass
-                        else:
-                            city = event_4.message
-                            owm = OWM(api_key=token)
-                            mgr = owm.weather_manager()
-                            observation = mgr.weather_at_place(city)
-                            w = observation.weather
-                            vk.messages.send(user_id=event.user_id, random_id='0',
-                                             message=f'''
-Сейчас температура {str(w.temperature('celsius')['temp'])} градусов.
-Ощущается как {str(w.temperature('celsius')['feels_like'])} градусов.
-Влажность {str(w.humidity)}%.
-Ветер {str(w.wind()['speed'])} м/c.
-''')
-                            flag = True
-                            if flag:
-                                break
-                        if flag:
-                            break
-                    if flag:
-                        break
-                if flag:
-                    keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
-                    keyboard.add_button('Стим', color=VkKeyboardColor.DEFAULT)
-                    keyboard.add_button('Погода', color=VkKeyboardColor.PRIMARY)
-                    vk.messages.send(user_id=event.user_id, keyboard=keyboard.get_keyboard(), random_id='0',
-                                     message='Главное меню')
-                    flag = False
+                                                 message='Выберите игру')
+                                for event_4 in longpoll.listen():
+                                    if event_4.type == VkEventType.MESSAGE_NEW:
+                                        if event_4.message == login.game[0]:
+                                            if int(login.item[0]) <= 4:
+                                                vk.messages.send(user_id=event_2.user_id, random_id='0',
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 message=f'Сейчас в инвентаре {login.item[0]} предмета.')
+                                            else:
+                                                vk.messages.send(user_id=event_2.user_id, random_id='0',
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 message=f'Сейчас в инвентаре {login.item[0]} предметов.')
 
+                                        if event_4.message == login.game[1]:
+                                            if int(login.item[1]) <= 4:
+                                                vk.messages.send(user_id=event_2.user_id, random_id='0',
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 message=f'Сейчас в инвентаре {login.item[1]} предмета.')
+                                            else:
+                                                vk.messages.send(user_id=event_2.user_id, random_id='0',
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 message=f'Сейчас в инвентаре {login.item[1]} предметов.')
+
+                                        if event_4.message == login.game[2]:
+                                            if int(login.item[2]) <= 4:
+                                                vk.messages.send(user_id=event_2.user_id, random_id='0',
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 message=f'Сейчас в инвентаре {login.item[2]} предмета.')
+                                            else:
+                                                vk.messages.send(user_id=event_2.user_id, random_id='0',
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 message=f'Сейчас в инвентаре {login.item[2]} предметов.')
+
+                                        if event_4.message == login.game[3]:
+                                            if int(login.item[3]) <= 4:
+                                                vk.messages.send(user_id=event_2.user_id, random_id='0',
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 message=f'Сейчас в инвентаре {login.item[3]} предмета.')
+                                            else:
+                                                vk.messages.send(user_id=event_2.user_id, random_id='0',
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 message=f'Сейчас в инвентаре {login.item[3]} предметов.')
+
+                                        if event_4.message == login.game[4]:
+                                            if int(login.item[4]) <= 4:
+                                                vk.messages.send(user_id=event_2.user_id, random_id='0',
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 message=f'Сейчас в инвентаре {login.item[4]} предмета.')
+                                            else:
+                                                vk.messages.send(user_id=event_2.user_id, random_id='0',
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 message=f'Сейчас в инвентаре {login.item[4]} предметов.')
+
+                                        if event_4.message == login.game[5]:
+                                            if int(login.item[5]) <= 4:
+                                                vk.messages.send(user_id=event_2.user_id, random_id='0',
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 message=f'Сейчас в инвентаре {login.item[5]} предмета.')
+                                            else:
+                                                vk.messages.send(user_id=event_2.user_id, random_id='0',
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 message=f'Сейчас в инвентаре {login.item[5]} предметов.')
+
+                                        if event_4.message == 'Назад':
+                                            flag = True
+                                            break
+                                        if flag:
+                                            break
+                                    if flag:
+                                        break
+                                if flag:
+                                    keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                                    keyboard.add_button('Баланс', color=VkKeyboardColor.DEFAULT)
+                                    keyboard.add_button('Инвентарь', color=VkKeyboardColor.PRIMARY)
+                                    keyboard.add_button('Вход', color=VkKeyboardColor.POSITIVE)
+                                    keyboard.add_button('Назад', color=VkKeyboardColor.NEGATIVE)
+                                    vk.messages.send(user_id=event.user_id,
+                                                     keyboard=keyboard.get_keyboard(),
+                                                     random_id='0',
+                                                     message='''Стим меню''')
+                                    flag = False
+                            if event_2.message == 'Вход':
+                                keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                                keyboard.add_button('Логин', color=VkKeyboardColor.DEFAULT)
+                                keyboard.add_button('Пароль', color=VkKeyboardColor.PRIMARY)
+                                keyboard.add_button('2FA код', color=VkKeyboardColor.POSITIVE)
+                                keyboard.add_button('Куки', color=VkKeyboardColor.POSITIVE)
+                                keyboard.add_line()
+                                keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
+                                vk.messages.send(user_id=event.user_id,
+                                                 keyboard=keyboard.get_keyboard(),
+                                                 random_id='0',
+                                                 message='Сначала логин, затем пароль, и потом 2FA код')
+                                for event_5 in longpoll.listen():
+                                    if event_5.type == VkEventType.MESSAGE_NEW:
+                                        if event_5.message == 'Логин':
+                                            vk.messages.send(user_id=event.user_id,
+                                                             random_id='0',
+                                                             message='Введите свой логин')
+                                            time.sleep(1)
+                                            for event_6 in longpoll.listen():
+                                                if event_6.type == VkEventType.MESSAGE_NEW:
+                                                    if event_6.message == 'Введите свой логин':
+                                                        print('1')
+                                                    else:
+                                                        login.username = event_6.message
+                                                        flag = True
+                                                        if flag:
+                                                            break
+                                                    if flag:
+                                                        break
+                                                if flag:
+                                                    break
+                                            if flag:
+                                                keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                                                keyboard.add_button('Логин', color=VkKeyboardColor.DEFAULT)
+                                                keyboard.add_button('Пароль', color=VkKeyboardColor.PRIMARY)
+                                                keyboard.add_button('2FA код', color=VkKeyboardColor.POSITIVE)
+                                                keyboard.add_button('Куки', color=VkKeyboardColor.POSITIVE)
+                                                keyboard.add_line()
+                                                keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
+                                                vk.messages.send(user_id=event.user_id,
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 random_id='0',
+                                                                 message='Теперь пароль')
+                                                flag = False
+                                        if event_5.message == 'Пароль':
+                                            vk.messages.send(user_id=event.user_id,
+                                                             random_id='0',
+                                                             message='Введите свой пароль')
+                                            time.sleep(1)
+                                            for event_7 in longpoll.listen():
+                                                if event_7.type == VkEventType.MESSAGE_NEW:
+                                                    if event_7.message == 'Введите свой пароль':
+                                                        print('1')
+                                                    else:
+                                                        login.password = event_7.message
+                                                        flag = True
+                                                        if flag:
+                                                            break
+                                                    if flag:
+                                                        break
+                                                if flag:
+                                                    break
+                                            if flag:
+                                                keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                                                keyboard.add_button('Логин', color=VkKeyboardColor.DEFAULT)
+                                                keyboard.add_button('Пароль', color=VkKeyboardColor.PRIMARY)
+                                                keyboard.add_button('2FA код', color=VkKeyboardColor.POSITIVE)
+                                                keyboard.add_button('Куки', color=VkKeyboardColor.POSITIVE)
+                                                keyboard.add_line()
+                                                keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
+                                                vk.messages.send(user_id=event.user_id,
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 random_id='0',
+                                                                 message='Ну и напоследок 2FA')
+                                                flag = False
+                                        if event_5.message == '2FA код':
+                                            vk.messages.send(user_id=event.user_id,
+                                                             random_id='0',
+                                                             message='Жду твой 2FA код')
+                                            time.sleep(1)
+                                            for event_8 in longpoll.listen():
+                                                if event_8.type == VkEventType.MESSAGE_NEW:
+                                                    if event_8.message == 'Жду твой 2FA код':
+                                                        print('1')
+                                                    else:
+                                                        login.two_factor_code = event_8.message
+                                                        flag = True
+                                                        if flag:
+                                                            break
+                                                    if flag:
+                                                        break
+                                                if flag:
+                                                    break
+                                            if flag:
+                                                keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                                                keyboard.add_button('Логин', color=VkKeyboardColor.DEFAULT)
+                                                keyboard.add_button('Пароль', color=VkKeyboardColor.PRIMARY)
+                                                keyboard.add_button('2FA код', color=VkKeyboardColor.POSITIVE)
+                                                keyboard.add_button('Куки', color=VkKeyboardColor.POSITIVE)
+                                                keyboard.add_line()
+                                                keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
+                                                vk.messages.send(user_id=event.user_id,
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 random_id='0',
+                                                                 message='Вхожу')
+                                                if new == 1:
+                                                    login.main(new=True)
+                                                    new += 1
+                                                else:
+                                                    vk.messages.send(user_id=event.user_id,
+                                                                     keyboard=keyboard.get_keyboard(),
+                                                                     random_id='0',
+                                                                     message='Вы уже вошли в свой аккаунт')
+                                                flag = False
+                                        if event_5.message == 'Куки':
+                                            login.main()
+                                            print(len(login.balance_last))
+                                            if int(login.balance_last) == 0:
+                                                flag = True
+                                            if flag:
+                                                keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                                                keyboard.add_button('Логин', color=VkKeyboardColor.DEFAULT)
+                                                keyboard.add_button('Пароль', color=VkKeyboardColor.PRIMARY)
+                                                keyboard.add_button('2FA код', color=VkKeyboardColor.POSITIVE)
+                                                keyboard.add_button('Куки', color=VkKeyboardColor.POSITIVE)
+                                                keyboard.add_line()
+                                                keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
+                                                vk.messages.send(user_id=event.user_id,
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 random_id='0',
+                                                                 message='Кукки не действительны\nПожалуйста войдите в аккаунт')
+                                                flag = False
+                                            elif int(login.balance_last) > 0:
+                                                flag = True
+                                            if flag:
+                                                keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                                                keyboard.add_button('Логин', color=VkKeyboardColor.DEFAULT)
+                                                keyboard.add_button('Пароль', color=VkKeyboardColor.PRIMARY)
+                                                keyboard.add_button('2FA код', color=VkKeyboardColor.POSITIVE)
+                                                keyboard.add_button('Куки', color=VkKeyboardColor.POSITIVE)
+                                                keyboard.add_line()
+                                                keyboard.add_button('Назад', color=VkKeyboardColor.DEFAULT)
+                                                vk.messages.send(user_id=event.user_id,
+                                                                 keyboard=keyboard.get_keyboard(),
+                                                                 random_id='0',
+                                                                 message='Вы успешно вошли')
+                                                flag = False
+                                        if event_5.message == 'Назад':
+                                            flag = True
+                                            if flag:
+                                                break
+                                        if flag:
+                                            break
+                                    if flag:
+                                        break
+                                if flag:
+                                    keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                                    keyboard.add_button('Баланс', color=VkKeyboardColor.DEFAULT)
+                                    keyboard.add_button('Инвентарь', color=VkKeyboardColor.PRIMARY)
+                                    keyboard.add_button('Вход', color=VkKeyboardColor.POSITIVE)
+                                    keyboard.add_button('Назад', color=VkKeyboardColor.NEGATIVE)
+                                    vk.messages.send(user_id=event.user_id,
+                                                     keyboard=keyboard.get_keyboard(),
+                                                     random_id='0',
+                                                     message='''Стим меню''')
+                                    flag = False
+                            if event_2.message == 'Назад':
+                                flag = True
+                                if flag:
+                                    break
+                            if flag:
+                                break
+                        if flag:
+                            break
+                    if flag:
+                        keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                        keyboard.add_button('Стим', color=VkKeyboardColor.DEFAULT)
+                        keyboard.add_button('Погода', color=VkKeyboardColor.PRIMARY)
+                        keyboard.add_button('Подписка', color=VkKeyboardColor.POSITIVE)
+                        keyboard.add_button('Оповещения', color=VkKeyboardColor.POSITIVE)
+                        vk.messages.send(user_id=event.user_id, keyboard=keyboard.get_keyboard(), random_id='0',
+                                         message='Главное меню')
+                        flag = False
+                if event.message == 'Погода':
+                    vk.messages.send(user_id=event.user_id, random_id='0', message='В каком городе?')
+                    for event_4 in longpoll.listen():
+                        if event_4.type == VkEventType.MESSAGE_NEW:
+                            if event_4.message == 'В каком городе?':
+                                pass
+                            else:
+                                city = event_4.message
+                                owm = OWM(api_key=token)
+                                mgr = owm.weather_manager()
+                                observation = mgr.weather_at_place(city)
+                                w = observation.weather
+                                vk.messages.send(user_id=event.user_id, random_id='0',
+                                                 message=f'''
+    Сейчас температура {str(w.temperature('celsius')['temp'])} градусов.
+    Ощущается как {str(w.temperature('celsius')['feels_like'])} градусов.
+    Влажность {str(w.humidity)}%.
+    Ветер {str(w.wind()['speed'])} м/c.
+    ''')
+                                flag = True
+                                if flag:
+                                    break
+                            if flag:
+                                break
+                        if flag:
+                            break
+                    if flag:
+                        keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                        keyboard.add_button('Стим', color=VkKeyboardColor.DEFAULT)
+                        keyboard.add_button('Погода', color=VkKeyboardColor.PRIMARY)
+                        keyboard.add_button('Подписка', color=VkKeyboardColor.POSITIVE)
+                        keyboard.add_button('Оповещения', color=VkKeyboardColor.POSITIVE)
+                        vk.messages.send(user_id=event.user_id, keyboard=keyboard.get_keyboard(), random_id='0',
+                                         message='Главное меню')
+                        flag = False
+                if event.message == 'Подписка':
+                    sql.execute('SELECT user FROM users')
+                    if sql.fetchone() is None:
+                        sql.execute(f'INSERT INTO users VALUES("{event.user_id}")')
+                        db.commit()
+                        keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                        keyboard.add_button('Назад', color=VkKeyboardColor.NEGATIVE)
+                        vk.messages.send(user_id=event.user_id, keyboard=keyboard.get_keyboard(), random_id='0',
+                                         message='Вы успешно подписались на рассылку')
+                        for event1 in longpoll.listen():
+                            if event1.type == VkEventType.MESSAGE_NEW:
+                                if event1.message == 'Назад':
+                                    flag = True
+                                    if flag:
+                                        break
+                                if flag:
+                                    break
+                            if flag:
+                                break
+                        if flag:
+                            keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                            keyboard.add_button('Стим', color=VkKeyboardColor.DEFAULT)
+                            keyboard.add_button('Погода', color=VkKeyboardColor.PRIMARY)
+                            keyboard.add_button('Подписка', color=VkKeyboardColor.POSITIVE)
+                            keyboard.add_button('Оповещения', color=VkKeyboardColor.POSITIVE)
+                            vk.messages.send(user_id=event.user_id, keyboard=keyboard.get_keyboard(), random_id='0',
+                                             message='Главное меню')
+                            flag = False
+                    else:
+                        keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                        keyboard.add_button('Назад', color=VkKeyboardColor.PRIMARY)
+                        keyboard.add_button('Отписаться', color=VkKeyboardColor.NEGATIVE)
+                        vk.messages.send(user_id=event.user_id, keyboard=keyboard.get_keyboard(), random_id='0',
+                                         message='Вы уже подписаны на рассылку')
+                        for event_10 in longpoll.listen():
+                            if event_10.type == VkEventType.MESSAGE_NEW:
+                                if event_10.message == 'Отписаться':
+                                    sql.execute(f'DELETE FROM users WHERE {event.user_id}')
+                                    db.commit()
+                                    keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                                    keyboard.add_button('Назад', color=VkKeyboardColor.NEGATIVE)
+                                    vk.messages.send(user_id=event.user_id, keyboard=keyboard.get_keyboard(),
+                                                     random_id='0',
+                                                     message='Вы успешно отписались')
+                                    for event_11 in longpoll.listen():
+                                        if event_11.type == VkEventType.MESSAGE_NEW:
+                                            if event_11.message == 'Назад':
+                                                flag = True
+                                                if flag:
+                                                    break
+                                            if flag:
+                                                break
+                                        if flag:
+                                            break
+                                    if flag:
+                                        keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                                        keyboard.add_button('Назад', color=VkKeyboardColor.NEGATIVE)
+                                        vk.messages.send(user_id=event.user_id, keyboard=keyboard.get_keyboard(),
+                                                         random_id='0',
+                                                         message='А зачем тебе это надо, может подпишишься?(')
+                                        flag = False
+
+
+                                if event_10.message == 'Назад':
+                                    flag = True
+                                    if flag:
+                                        break
+                                if flag:
+                                    break
+                            if flag:
+                                break
+                        if flag:
+                            keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                            keyboard.add_button('Стим', color=VkKeyboardColor.DEFAULT)
+                            keyboard.add_button('Погода', color=VkKeyboardColor.PRIMARY)
+                            keyboard.add_button('Подписка', color=VkKeyboardColor.POSITIVE)
+                            keyboard.add_button('Оповещения', color=VkKeyboardColor.POSITIVE)
+                            vk.messages.send(user_id=event.user_id, keyboard=keyboard.get_keyboard(), random_id='0',
+                                             message='Главное меню')
+                            flag = False
+                if event.message == 'Оповещения':
+                    msg = 'Напишите сколько сделать проверок\nУчтите, что пока все проверки не выполняться вы не сможете пользоваться ботом\nПроверка делаеться раз в 6 минут\nРекомендуемое число от 5-10'
+
+                    vk.messages.send(user_id=event.user_id, random_id='0',
+                                     message=msg)
+                    time.sleep(1)
+                    for event_13 in longpoll.listen():
+                        if event_13.type == VkEventType.MESSAGE_NEW:
+                            if event_13.message == msg:
+                                print('1')
+                            else:
+                                for i in range(int(event_13.message)):
+                                    if new_1 == 1:
+                                        login.main()
+                                        login.main()
+                                        new_1 += 1
+                                    else:
+                                        login.main()
+                                    comparation()
+                                    time.sleep(20)
+                                flag = True
+                                if flag:
+                                    break
+                            if flag:
+                                break
+                        if flag:
+                            break
+                    if flag:
+                        keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+                        keyboard.add_button('Стим', color=VkKeyboardColor.DEFAULT)
+                        keyboard.add_button('Погода', color=VkKeyboardColor.PRIMARY)
+                        keyboard.add_button('Подписка', color=VkKeyboardColor.POSITIVE)
+                        keyboard.add_button('Оповещения', color=VkKeyboardColor.POSITIVE)
+                        vk.messages.send(user_id=event.user_id, keyboard=keyboard.get_keyboard(), random_id='0',
+                                         message='Провекра закончилась')
+    except:
+        print(Exception)
+        try:
+            keyboard = vk_api.keyboard.VkKeyboard(one_time=True)
+            keyboard.add_button('Стим', color=VkKeyboardColor.DEFAULT)
+            keyboard.add_button('Погода', color=VkKeyboardColor.PRIMARY)
+            keyboard.add_button('Подписка', color=VkKeyboardColor.POSITIVE)
+            keyboard.add_button('Оповещения', color=VkKeyboardColor.POSITIVE)
+            vk.messages.send(user_id="254928937", random_id='0',
+                             message=f'Случилась ошибка', keyboard=keyboard.get_keyboard())
+        except:
+            pass
