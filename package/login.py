@@ -3,8 +3,9 @@ import requests
 from bs4 import BeautifulSoup
 
 url = 'https://steamcommunity.com/profiles/76561198206968703/inventory/'
-username = 'eeonegay112'
-password = '223123ar'
+username = ''
+password = ''
+two_factor_code = ''
 session = None
 cookies = {}
 game = []
@@ -17,7 +18,6 @@ balance_last = 0
 
 def login():
     global session
-    two_factor_code = input('=')
     user = wa.WebAuth(username=username)
     session = user.login(password=password, twofactor_code=two_factor_code)
     return session
