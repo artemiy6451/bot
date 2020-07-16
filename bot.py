@@ -9,8 +9,8 @@ import sqlite3
 
 session = requests.Session()
 
-vk_session = vk_api.VkApi(token='6f88ad51080d9915b1b744718780f612b2b3f5e4d9cc72cf0acc9df06bd43a440b623d23b00d8ad7f93da')
-token = 'e0e9c0ccd1fa05300b95620e16ea503f'
+vk_session = vk_api.VkApi(token='')
+token = ''
 new = 1
 flag = False
 new_1 = 1
