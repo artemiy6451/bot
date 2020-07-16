@@ -9,8 +9,8 @@ import sqlite3
 
 session = requests.Session()
 
-vk_session = vk_api.VkApi(token='')
-token = ''
+vk_session = vk_api.VkApi(token='') #Токен вк
+token = '' #Токен openWeather
 new = 1
 flag = False
 new_1 = 1
