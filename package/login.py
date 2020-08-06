@@ -2,9 +2,9 @@ import steam.webauth as wa
 import requests
 from bs4 import BeautifulSoup
 
-url = 'https://steamcommunity.com/profiles/76561198412802908/inventory/'
-username = 'danielko738'
-password = '9Xt-88i-LZ4-nUf'
+url = '' #Ссылка на инвентарь
+username = '' #Логин(не обязательно)
+password = '' #Пароль(не обязательно)
 two_factor_code = ''
 session = None
 cookies = {}
