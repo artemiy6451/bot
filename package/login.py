@@ -2,9 +2,9 @@ import steam.webauth as wa
 import requests
 from bs4 import BeautifulSoup
 
-url = 'https://steamcommunity.com/profiles/76561198206968703/inventory/'
-username = ''
-password = ''
+url = 'https://steamcommunity.com/profiles/76561198412802908/inventory/'
+username = 'danielko738'
+password = '9Xt-88i-LZ4-nUf'
 two_factor_code = ''
 session = None
 cookies = {}
@@ -14,6 +14,8 @@ info = []
 bal = []
 balance_new = 0
 balance_last = 0
+count_games = 0
+i = True
 
 
 def login():
@@ -80,26 +82,36 @@ def choice():
         print('Unknown choice')
 
 def get_content(html):
+    global i, count_games
     soup = BeautifulSoup(html, 'html.parser')
     games = soup.find_all('span', class_="games_list_tab_name")
     items = soup.find_all('span', class_="games_list_tab_number")
     for el in games:
         game.append(el.get_text(strip=True))
     for it in items:
-        i = 0
         item.append(it.get_text(strip=True).replace('(','').replace(')',''))
-        i += 1
+
     n = 0
-    for all in game:
-        info.append({
-            all : item[n]
-        })
-        n +=1
-    del info[0:-12]
-    del game[0:-12]
-    del item[0:-12]
+    try:
+        for all in game:
+            info.append({
+                all : item[n]
+            })
+            n +=1
+    except: pass
+
+    if i:
+        i = False
+        count_games = int(len(game))
+    else:
+        del info[0:-count_games * 2]
+        games.clear()
+        items.clear()
+        del item[0:-count_games * 2]
+        del game[0:-count_games]
     print(info)
     return info
+
 def get_bal(html):
     global balance_last, balance_new
     soup = BeautifulSoup(html, 'html.parser')
@@ -114,28 +126,10 @@ def get_bal(html):
         pass
     print(balance_last, balance_new)
 
-def comparation(step=0, n=0):
-    if step == 0:
-        pass
-    else:
-        for i in item:
-            try:
-                if i == item[n + 6]:
-                    n += 1
-                    return '+'
-                else:
-                    n += 1
-                    return '-'
-            except IndexError:
-                pass
 
-
-step = 0
 def main(new = False):
-    global step
     html = send_cookies(cookies=cookies, new_session=new)
     if html.ok:
         get_content(html.text)
         get_bal(html.text)
-        comparation(step=step)
-    step +=1
+
